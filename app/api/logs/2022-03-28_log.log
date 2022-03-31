@@ -1,0 +1,7 @@
+2022-03-28 12:17:12.830 | ERROR    | app.api.v1.user:create_users:34 - 注册失败
+2022-03-28 12:17:43.601 | DEBUG    | app.api.v1.user:create_users:44 - 注册用户成功
+2022-03-28 12:18:35.473 | DEBUG    | app.api.v1.user:create_users:44 - 注册用户成功
+2022-03-28 12:18:48.820 | ERROR    | app.api.v1.user:create_users:34 - 注册失败
+2022-03-28 13:56:02.052 | ERROR    | app.api.v1.user:create_users:34 - 您输入的手机号码已存在
+2022-03-28 13:58:44.926 | DEBUG    | app.api.v1.user:create_users:44 - 用户yuanjl12334512成功
+2022-03-28 14:04:08.208 | DEBUG    | app.api.v1.user:create_users:46 - 用户yuanjl123345121注册成功，注册时间2022-03-28 14:04:08
