@@ -2,7 +2,13 @@
 import uvicorn as u
 import time
 from fastapi import FastAPI,Depends,Request
-from app.api.v1 import application
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
+from starlette.responses import JSONResponse
+
+from app.api.config.config import *
+from app.api.v1 import application,Login
+from aioredis import create_redis_pool, Redis
 
 
 
@@ -18,6 +24,31 @@ app =FastAPI(
     redoc_url='/redocs'
 )
 
+async def get_redis_pool() -> Redis:
+
+    if EVENT=="test":
+        redis = await create_redis_pool(f"redis://:@" + testredishost + ":" + testredisport + "/" + testredisdb + "?encoding=utf-8")
+    else:
+        redis = await create_redis_pool(f"redis://:@" + redishost + ":" + redisport + "/" + redisdb + "?encoding=utf-8")
+
+    return redis
+
+@app.on_event("startup")
+async def startup_event():
+    app.state.redis = await get_redis_pool()
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    app.state.redis.close()
+    await app.state.redis.wait_closed()
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        content=jsonable_encoder({"message": exc.errors(), "code": 421}),
+    )
+
 @app.middleware('http')
 async def add_process_time_header(request:Request,call_next):#call_next 将request请求做为参数
     '''中间件'''
@@ -26,8 +57,9 @@ async def add_process_time_header(request:Request,call_next):#call_next 将reque
     processtime = time.time() - start_time
     response.headers['X-Process-Time'] = str(processtime)
     return response
+app.include_router(Login,prefix='/api/v1/login',tags=["登录注册"])
+app.include_router(application,prefix='/api/v1/user',tags=["用户操作"])
 
-app.include_router(application,prefix='/app/api/v1',tags=["FastAPI实操"])
 
 
 if __name__ == '__main__':

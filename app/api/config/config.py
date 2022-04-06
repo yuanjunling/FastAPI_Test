@@ -7,7 +7,18 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30 # 访问令牌过期时间
 
 pwd_context = CryptContext(schemes=["bcrypt"],deprecated="auto") #对传入的密码加密
 
-oauth2_schema = OAuth2PasswordBearer(tokenUrl="app/api/v1/jwt/user/token")#接受用户名和密码的token接口
+oauth2_schema = OAuth2PasswordBearer(tokenUrl="api/v1/login/jwt/user/token")#接受用户名和密码的token接口
+EVENT = "test"
+
+redishost='127.0.0.1'  #redis配置
+redisport='6379'#redis端口
+redisdb='0'
+redispw='123456'
+
+testredishost='127.0.0.1'  #redis配置
+testredisport='6379'#redis端口
+testredisdb='0'
+testredispw='123456'
 
 #对密码进行效验
 def verity_password(plain_password:str,hashed_password:str):

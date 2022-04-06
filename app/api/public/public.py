@@ -6,7 +6,7 @@ from app.curd.User_curd import get_user_by_name,create_user
 from sqlalchemy.orm import Session
 from app.api.config.config import verity_password, SECRET_KEY, ALGORITHM, oauth2_schema
 from app.model.test01.database import SessionLocal
-from fastapi import  Depends, HTTPException,status
+from fastapi import Depends, HTTPException, status, Request, Header
 
 
 def get_db():
@@ -19,6 +19,7 @@ def get_db():
 def jwt_authenticate_user(db,username:str,password:str):
     """验证用户"""
     user = get_user_by_name(db=db,name=username)
+
 
     if not user:
         return False
@@ -40,7 +41,7 @@ def created_access_token(data:dict,expires_delta:Optional[timedelta]=None):
 
     return encoded_jwt
 
-async def jwt_get_current_user(db:Session=Depends(get_db),token:str=Depends(oauth2_schema)):
+async def jwt_get_current_user(request: Request,db:Session=Depends(get_db),token: Optional[str] = Header(...)):
     """获取当前用户"""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -52,6 +53,9 @@ async def jwt_get_current_user(db:Session=Depends(get_db),token:str=Depends(oaut
         username =payload.get("sub")
         if username is None:
             raise credentials_exception
+        useris = await request.app.state.redis.get(username)
+        if not useris and useris != token:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='用户未登录或者登陆token已经失效')
     except JWTError:
         raise credentials_exception
     user = get_user_by_name(db=db,name=username)
