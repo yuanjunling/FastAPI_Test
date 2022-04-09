@@ -92,6 +92,8 @@ async def upload_files(db:Session=Depends(get_db),files:UploadFile=File(...)):
 
     contents = await files.read()
     file_name_data=await saveRaw(contents, files.filename)
+    now_time = datetime.now()
+    str_time = now_time.strftime("%Y-%m-%d %X")  # 格式化时间字符串
 
     try:
         # 打开工作薄与工作表
@@ -124,6 +126,8 @@ async def upload_files(db:Session=Depends(get_db),files:UploadFile=File(...)):
             if passwordData:
                 password_hash = get_password_hash(str(passwordData))
             upload_file(db=db,usernameData=usernameData,userData=userData,phoneData=phoneData,sexData=sexData,passwordData=password_hash)
+        logger.debug('excel文件：{}上传成功 日志时间：{}'.format(file_name_data,str_time))
     except:
+        logger.debug('{0}文件上传失败 日志时间：{1}'.format(file_name_data,str_time))
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='文件上传失败')
     return {"code":"200","message":"文件上传成功"}
