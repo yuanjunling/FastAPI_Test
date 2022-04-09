@@ -52,3 +52,14 @@ def delete_user(db:Session,name:str):
     db.commit()
     db.close()
     return res
+
+def upload_file(db:Session,usernameData,userData,phoneData,sexData,passwordData):
+
+    dataUser = models.User(username=usernameData, user=userData, phone=phoneData, sex=sexData, password=passwordData)
+    db.add(dataUser)
+    db.commit()
+    db.close()
+
+
+
+

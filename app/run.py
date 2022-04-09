@@ -5,14 +5,11 @@ from fastapi import FastAPI,Depends,Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from starlette.responses import JSONResponse
-
+import sys
+sys.path.append('/FastAPI_Yuan')
 from app.api.config.config import *
 from app.api.v1 import application,Login
 from aioredis import create_redis_pool, Redis
-
-
-
-
 
 
 app =FastAPI(

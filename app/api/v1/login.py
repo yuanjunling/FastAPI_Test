@@ -69,10 +69,12 @@ async def login_for_access_token(request: Request,db:Session=Depends(get_db),for
 @Login.put("/logout", summary="注销")
 async def user_logout(request: Request, user: User = Depends(jwt_get_current_user)):
     try:
+        logger.debug('用户{}，退出成功'.format(user.username))
         await request.app.state.redis.delete(user.username)
         return {
             "rode":"200",
             'message':'操作成功'
         }
     except:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='注销失败')
+        logger.error('用户退出失败')
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='用户退出失败')

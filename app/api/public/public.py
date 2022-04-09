@@ -1,5 +1,8 @@
 #coding=utf-8
+import random,string
 from datetime import datetime,timedelta
+
+import pandas as pd
 from jose import JWTError,jwt
 from typing import Optional
 from app.curd.User_curd import get_user_by_name,create_user
@@ -7,7 +10,8 @@ from sqlalchemy.orm import Session
 from app.api.config.config import verity_password, SECRET_KEY, ALGORITHM, oauth2_schema
 from app.model.test01.database import SessionLocal
 from fastapi import Depends, HTTPException, status, Request, Header
-
+from starlette.responses import FileResponse
+import time,pandas
 
 def get_db():
     db=SessionLocal()
@@ -63,3 +67,18 @@ async def jwt_get_current_user(request: Request,db:Session=Depends(get_db),token
         raise credentials_exception
     return user
 
+async def download_file(result:dict):
+    file = "./File/file_result/" + str(time.time()) + ".xlsx"
+    df = pandas.DataFrame(result)
+    df.columns = ["账户", "名称", "手机号码", "性别", "密码"]
+    df.to_excel(file, index=False)
+    return FileResponse(file, filename="user.xlsx")
+
+
+# 自定义保存文件函数
+async def saveRaw(file,file_name):
+    data = pd.read_excel(file)
+    datas = ''.join(random.sample(string.ascii_letters + string.digits, 10))
+    file_name_data = datas +file_name
+    data.to_excel('E:/FastAPI_Yuan/app/File/file_test' + '/' +file_name_data , index = None)
+    return file_name_data
