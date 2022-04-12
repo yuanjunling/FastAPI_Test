@@ -51,15 +51,14 @@ async def login_for_access_token(request: Request,db:Session=Depends(get_db),for
         )
     else:
         #token过期时间
-        # access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES * 604800)
         access_token = created_access_token(
-            data={"sub":user.username}
-            # expires_delta=access_token_expires
+            data={"sub":user.username},
+            expires_delta=access_token_expires
         )
-        token = created_access_token(data={"sub": user.username})
         useris = await request.app.state.redis.get(user.username)
         if not useris:
-            await request.app.state.redis.set(user.username, token, expire=ACCESS_TOKEN_EXPIRE_MINUTES * 604800 )
+            await request.app.state.redis.set(user.username, access_token, expire=ACCESS_TOKEN_EXPIRE_MINUTES * 604800 )
 
         return {
             "access_token":access_token,
