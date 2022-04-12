@@ -3,6 +3,7 @@ from typing import List
 
 from sqlalchemy.orm import Session
 
+from app.api.config.config import get_password_hash
 from app.model.test01 import models
 from app.schemas.User_schemas import CreateUser, UpdateUser
 
@@ -53,12 +54,23 @@ def delete_user(db:Session,name:str):
     db.close()
     return res
 
-def upload_file(db:Session,usernameData,userData,phoneData,sexData,passwordData):
-
-    dataUser = models.User(username=usernameData, user=userData, phone=phoneData, sex=sexData, password=passwordData)
-    db.add(dataUser)
+def upload_file(db:Session,rows,sheet):
+    for r in range(2, rows + 1):
+        usernameData = sheet.cell(row=r, column=1).value
+        userData = sheet.cell(row=r, column=2).value
+        phoneData = sheet.cell(row=r, column=3).value
+        sexData = sheet.cell(row=r, column=4).value
+        passwordData = sheet.cell(row=r, column=5).value
+        # values = (numData, nameData, ageData, classesData, scoreData)
+        # print(values)
+        # 添加数据
+        if passwordData:
+            password_hash = get_password_hash(str(passwordData))
+        dataUser = models.User(username=usernameData, user=userData, phone=phoneData, sex=sexData, password=password_hash)
+        db.add(dataUser)
     db.commit()
     db.close()
+
 
 
 

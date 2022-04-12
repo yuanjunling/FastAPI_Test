@@ -1,24 +1,18 @@
 #coding=utf-8
-from typing import Optional, List
-from fastapi.security import OAuth2PasswordRequestForm
-from openpyxl import load_workbook
-from pydantic import BaseModel
-from app.File.file_data.user_data import user_result
-from app.api.config.config import get_password_hash, ACCESS_TOKEN_EXPIRE_MINUTES, oauth2_schema
-from app.api.public.public import get_db, jwt_authenticate_user, created_access_token, jwt_get_current_user, \
-    download_file, saveRaw
-from app.curd.User_curd import get_user_by_name, create_user, user_update, delete_user, get_user_by_names, \
-    get_user_by_phone, upload_file
-from app.model.test01.database import engine, Base
-from app.model.test01.models import User
-from app.schemas.User_schemas import ReadUser, CreateUser, Token, UpdateUser
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Request, status, Body, UploadFile, File
-from sqlalchemy.orm import Session
-from datetime import datetime, timedelta
+from typing import List
 
+from app.File.file_data.user_data import user_result
+from app.api.config.config import get_password_hash
+from app.api.public.public import get_db, jwt_get_current_user, \
+    download_file, saveRaw, excel_data_uploading_db
+from app.curd.User_curd import get_user_by_name, user_update, delete_user, get_user_by_names
+from app.model.test01.database import engine, Base
+from app.schemas.User_schemas import ReadUser,  UpdateUser
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
+from sqlalchemy.orm import Session
+from datetime import datetime
 from app.api.v1.extensions.logger import logger
-import traceback
-from app.schemas.annotation_api_user import JiekouCanshuJieshi
+
 
 
 
@@ -82,52 +76,19 @@ async def download_files():
         return {
             "rode": "200",
             'message': '操作成功',
-            'filpath':file.path
+            'filepath':file.path,
+            'filename':file.filename
         }
     except:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='文件下载失败')
 
 @application.post("/upload_files")
 async def upload_files(db:Session=Depends(get_db),files:UploadFile=File(...)):
-
     contents = await files.read()
     file_name_data=await saveRaw(contents, files.filename)
     now_time = datetime.now()
     str_time = now_time.strftime("%Y-%m-%d %X")  # 格式化时间字符串
+    result=await excel_data_uploading_db(file_name_data=file_name_data,str_time=str_time,db=db)
+    return result
 
-    try:
-        # 打开工作薄与工作表
-        wb = load_workbook('./File/file_test/'+file_name_data)
-        sheet = wb.get_sheet_by_name('Sheet1')
 
-        # 计算表格数据的有效行数rows
-        num = 1
-        while 1:
-            cell = sheet.cell(row=num, column=1).value
-            if cell:
-                num = num + 1
-            else:
-                # print(num)
-                break
-        rows = num - 1
-        # print(rows)
-
-        # for循环迭代读取xls文件中的每行数据, 从第二行开始因为需要跳过标题行
-        # 注意：openpyxl方式表格列标与行标都是从1开始计算的
-        for r in range(2, rows + 1):
-            usernameData = sheet.cell(row=r, column=1).value
-            userData = sheet.cell(row=r, column=2).value
-            phoneData = sheet.cell(row=r, column=3).value
-            sexData = sheet.cell(row=r, column=4).value
-            passwordData = sheet.cell(row=r, column=5).value
-            # values = (numData, nameData, ageData, classesData, scoreData)
-            # print(values)
-            # 添加数据
-            if passwordData:
-                password_hash = get_password_hash(str(passwordData))
-            upload_file(db=db,usernameData=usernameData,userData=userData,phoneData=phoneData,sexData=sexData,passwordData=password_hash)
-        logger.debug('excel文件：{}上传成功 日志时间：{}'.format(file_name_data,str_time))
-    except:
-        logger.debug('{0}文件上传失败 日志时间：{1}'.format(file_name_data,str_time))
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='文件上传失败')
-    return {"code":"200","message":"文件上传成功"}
