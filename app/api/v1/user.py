@@ -32,8 +32,8 @@ async def jwt_read_users_me(username:str,db:Session=Depends(get_db)):
 
 #获取全部用户信息
 @application.get("/jwt/users/mes",response_model=List[ReadUser],summary='获取全部用户信息')
-async def jwt_read_users_mes(db:Session=Depends(get_db)):
-    db_user = get_user_by_names(db=db)
+async def jwt_read_users_mes(db:Session=Depends(get_db),skip:int=0,limit:int=10):
+    db_user = get_user_by_names(db=db,skip=skip,limit=limit)
     return db_user
 
 #修改用户信息
@@ -82,7 +82,7 @@ async def download_files():
     except:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='文件下载失败')
 
-@application.post("/upload_files")
+@application.post("/upload_files",summary='上传数据')
 async def upload_files(db:Session=Depends(get_db),files:UploadFile=File(...)):
     contents = await files.read()
     file_name_data=await saveRaw(contents, files.filename)
