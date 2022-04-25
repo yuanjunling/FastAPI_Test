@@ -23,8 +23,6 @@ Base.metadata.create_all(bind=engine)
 @application.get("/jwt/users/me",response_model=ReadUser,summary='获取用户信息')
 async def jwt_read_users_me(username:str,db:Session=Depends(get_db)):
     db_user = get_user_by_name(db=db, name=username)
-    # logger.info('这是取单个用户信息接口：username={},当前时间戳为：{tiems}', username, tiems=time.time())
-    # my_function(0, 0, 0)
     if db_user is None :
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='您输入的数据有误')
     else:

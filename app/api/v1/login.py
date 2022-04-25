@@ -74,6 +74,6 @@ async def user_logout(request: Request, user: User = Depends(jwt_get_current_use
             "rode":"200",
             'message':'操作成功'
         }
-    except:
-        logger.error('用户退出失败')
+    except Exception as e:
+        logger.error('用户退出失败:{}'.format(e))
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='用户退出失败')

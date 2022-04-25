@@ -61,9 +61,6 @@ def upload_file(db:Session,rows,sheet):
         phoneData = sheet.cell(row=r, column=3).value
         sexData = sheet.cell(row=r, column=4).value
         passwordData = sheet.cell(row=r, column=5).value
-        # values = (numData, nameData, ageData, classesData, scoreData)
-        # print(values)
-        # 添加数据
         if passwordData:
             password_hash = get_password_hash(str(passwordData))
         dataUser = models.User(username=usernameData, user=userData, phone=phoneData, sex=sexData, password=password_hash)
