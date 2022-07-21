@@ -8,7 +8,7 @@ from typing import Optional
 from app.curd.User_curd import get_user_by_name, upload_file
 from sqlalchemy.orm import Session
 from app.api.config.config import verity_password, SECRET_KEY, ALGORITHM, get_password_hash
-from app.model.test01.database import SessionLocal
+from app.model.test01.mysql import SessionLocal
 from fastapi import Depends, HTTPException, status, Request, Header
 from starlette.responses import FileResponse
 from app.api.v1.extensions.logger import logger
